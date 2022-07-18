@@ -11,7 +11,7 @@ ASMagicProjectile::ASMagicProjectile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	AttackSpeed = 1000.f;
 
 	SphereComp = CreateDefaultSubobject<USphereComponent>("SphereComp");
 	
@@ -25,7 +25,7 @@ ASMagicProjectile::ASMagicProjectile()
 	
 	MovementComp = CreateDefaultSubobject<UProjectileMovementComponent>("MovementComp");
 
-	MovementComp->InitialSpeed = 1000.f;
+	MovementComp->InitialSpeed = AttackSpeed;
 
 	MovementComp->bRotationFollowsVelocity = true;
 	MovementComp->bInitialVelocityInLocalSpace = true;

@@ -8,6 +8,8 @@
 
 class UCameraComponent;
 class USpringArmComponent;
+class USInteractionComponent;
+class UAnimMontage;
 
 UCLASS()
 class UE_PROJECT_CS193N_API ASCharacter : public ACharacter
@@ -19,25 +21,48 @@ public:
 	ASCharacter();
 	
 protected:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Attack")
 	TSubclassOf<AActor> ProjectileClass;
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	UAnimMontage* AttackAnim;
 
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	TSubclassOf<AActor> BlackholeClass;
+
+	FTimerHandle TimerHandle_PrimaryAttack;
+	//FTimerHandle TimerHandle_BlackholeAttack;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UPROPERTY(visibleAnywhere)
+	USInteractionComponent *InteractionComp;
 	
-	
+
 	UPROPERTY(visibleAnywhere)
 	UCameraComponent* CameraComp;
 
 	UPROPERTY(visibleAnywhere)
 	USpringArmComponent* SpringArmComp;
-	void PrimaryAttack();
+
+
+	/*Movement Function*/
 	void MoveForward(float value);
 	void MoveRight(float value);
 	void JumpStart();
 	void JumpEnd();
+
+	/*Interact Function*/
+	void PrimaryInteract();
+
+
+
+	/*Attack Function*/
+	void PrimaryAttack();
+	void PrimaryAttack_TimeElapsed();
+	//void BlackHoleAttack();
+	//void BlackholeAttack_TimeElapsed();
 
 public:	
 	// Called every frame

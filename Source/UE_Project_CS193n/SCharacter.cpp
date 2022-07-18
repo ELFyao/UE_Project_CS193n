@@ -5,6 +5,7 @@
 #include "Camera/CameraComponent.h"
 #include"GameFramework/SpringArmComponent.h"
 #include"GameFramework/CharacterMovementComponent.h"
+#include "SInteractionComponent.h"
 #include"DrawDebugHelpers.h"
 
 // Sets default values
@@ -17,6 +18,7 @@ ASCharacter::ASCharacter()
 	SpringArmComp->SetupAttachment(RootComponent);
 	SpringArmComp->bUsePawnControlRotation = true;
 
+	InteractionComp = CreateDefaultSubobject<USInteractionComponent>("InteractionComp");
 	
 	CameraComp->SetupAttachment(SpringArmComp);
 
@@ -70,21 +72,72 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
+	PlayerInputComponent->BindAction("BlackholeAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASCharacter::JumpStart);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ASCharacter::JumpEnd);
+
+	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &ASCharacter::PrimaryInteract);
 
 }
 
 void ASCharacter::PrimaryAttack()
 {
+	PlayAnimMontage(AttackAnim);
+
+	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::PrimaryAttack_TimeElapsed, 0.2f);
+
+	// if something goes wrong like character died; 
+	//GetWorldTimerManager().ClearTimer(TimerHandle_PrimaryAttack);
+}
+
+void ASCharacter::PrimaryAttack_TimeElapsed()
+{
 	FVector handsLocation = GetMesh()->GetSocketLocation("Muzzle_01");
 
-	FTransform SpawnTM = FTransform(GetControlRotation(), handsLocation);
+	/*
+	* assignment_2 part1 start here.
+	*/
+	FVector ControlLocation = CameraComp->GetComponentLocation();
+	FRotator ControlRotation = GetControlRotation();
+	FCollisionObjectQueryParams ObjectQueryParams;
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
+	FVector End = ControlLocation + (ControlRotation.Vector() * 10000.f);
+
+	FHitResult Hit;
+
+	FVector AttackEnd;
+	bool bBlockingHit = GetWorld()->LineTraceSingleByObjectType(Hit, ControlLocation, End, ObjectQueryParams);
+	if (bBlockingHit) {
+		AttackEnd = Hit.ImpactPoint;
+	}
+	else
+	{
+		AttackEnd = End;
+	}
+
+	FRotator AttackDirection = (AttackEnd - handsLocation).Rotation();
+
+	FTransform SpawnTM = FTransform(AttackDirection, handsLocation);
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Instigator = this;
 	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
 }
+
+//void ASCharacter::BlackHoleAttack()
+//{
+//	PlayAnimMontage(AttackAnim);
+//
+//	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::BlackholeAttack_TimeElapsed, 0.2f);
+//}
+//
+//void ASCharacter::BlackholeAttack_TimeElapsed()
+//{
+//
+//}
 
 void ASCharacter::MoveForward(float value)
 {
@@ -115,3 +168,10 @@ void ASCharacter::JumpEnd()
 {
 	bPressedJump = false;
 }
+
+void ASCharacter::PrimaryInteract()
+{
+	InteractionComp->PrimaryInteract();
+}
+
+
