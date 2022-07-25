@@ -6,6 +6,7 @@
 #include"GameFramework/SpringArmComponent.h"
 #include"GameFramework/CharacterMovementComponent.h"
 #include "SInteractionComponent.h"
+#include "SAttackComponent.h"
 #include"DrawDebugHelpers.h"
 
 // Sets default values
@@ -19,6 +20,7 @@ ASCharacter::ASCharacter()
 	SpringArmComp->bUsePawnControlRotation = true;
 
 	InteractionComp = CreateDefaultSubobject<USInteractionComponent>("InteractionComp");
+	AttackComp = CreateDefaultSubobject<USAttackComponent>("AttackComp");
 	
 	CameraComp->SetupAttachment(SpringArmComp);
 
@@ -78,6 +80,7 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ASCharacter::JumpEnd);
 
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &ASCharacter::PrimaryInteract);
+	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &ASCharacter::PrimaryDash);
 
 }
 
@@ -98,13 +101,50 @@ void ASCharacter::PrimaryAttack_TimeElapsed()
 	/*
 	* assignment_2 part1 start here.
 	*/
+	FRotator AttackDirection = GetAimDirection(handsLocation, 10000.f);
+
+	FTransform SpawnTM = FTransform(AttackDirection, handsLocation);
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Instigator = this;
+	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+}
+
+
+
+
+
+void ASCharacter::PrimaryDash()
+{
+	PlayAnimMontage(AttackAnim);
+
+	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::PrimaryDash_TimeElapsed, 0.2f);
+}
+
+void ASCharacter::PrimaryDash_TimeElapsed()
+{
+	FVector handsLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+
+	/*
+	* assignment_2 part3 start here.
+	*/
+	FRotator AttackDirection = GetAimDirection(handsLocation,1000.f);
+	FTransform SpawnTM = FTransform(AttackDirection, handsLocation);
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Instigator = this;
+	AttackComp->SpawnDashProjectile(SpawnTM, SpawnParams);
+}
+
+FRotator ASCharacter::GetAimDirection(FVector EyeLoction, float AttackDistance)
+{
 	FVector ControlLocation = CameraComp->GetComponentLocation();
 	FRotator ControlRotation = GetControlRotation();
 	FCollisionObjectQueryParams ObjectQueryParams;
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
-	FVector End = ControlLocation + (ControlRotation.Vector() * 10000.f);
+	FVector End = ControlLocation + (ControlRotation.Vector() * AttackDistance);
 
 	FHitResult Hit;
 
@@ -117,27 +157,8 @@ void ASCharacter::PrimaryAttack_TimeElapsed()
 	{
 		AttackEnd = End;
 	}
-
-	FRotator AttackDirection = (AttackEnd - handsLocation).Rotation();
-
-	FTransform SpawnTM = FTransform(AttackDirection, handsLocation);
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParams.Instigator = this;
-	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+	return (AttackEnd - EyeLoction).Rotation();
 }
-
-//void ASCharacter::BlackHoleAttack()
-//{
-//	PlayAnimMontage(AttackAnim);
-//
-//	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::BlackholeAttack_TimeElapsed, 0.2f);
-//}
-//
-//void ASCharacter::BlackholeAttack_TimeElapsed()
-//{
-//
-//}
 
 void ASCharacter::MoveForward(float value)
 {
@@ -173,5 +194,7 @@ void ASCharacter::PrimaryInteract()
 {
 	InteractionComp->PrimaryInteract();
 }
+
+
 
 

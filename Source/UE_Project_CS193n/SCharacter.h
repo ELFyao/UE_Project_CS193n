@@ -10,6 +10,7 @@ class UCameraComponent;
 class USpringArmComponent;
 class USInteractionComponent;
 class UAnimMontage;
+class USAttackComponent;
 
 UCLASS()
 class UE_PROJECT_CS193N_API ASCharacter : public ACharacter
@@ -38,6 +39,9 @@ protected:
 
 	UPROPERTY(visibleAnywhere)
 	USInteractionComponent *InteractionComp;
+
+	UPROPERTY(visibleAnywhere)
+	USAttackComponent *AttackComp;
 	
 
 	UPROPERTY(visibleAnywhere)
@@ -61,6 +65,12 @@ protected:
 	/*Attack Function*/
 	void PrimaryAttack();
 	void PrimaryAttack_TimeElapsed();
+
+	void PrimaryDash();
+	void PrimaryDash_TimeElapsed();
+
+
+	FRotator GetAimDirection(FVector EyeLoction,float AttackDistance);
 	//void BlackHoleAttack();
 	//void BlackholeAttack_TimeElapsed();
 
