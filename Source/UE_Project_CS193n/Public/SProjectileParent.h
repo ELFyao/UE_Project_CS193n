@@ -10,10 +10,11 @@
 class USphereComponent;
 class UProjectileMovementComponent;
 class UParticleSystemComponent;
+class UParticleSystem;
 
 
 UCLASS()
-class UE_PROJECT_CS193N_API ASProjectileParent : public AActor, public ISProjectileInterface
+class UE_PROJECT_CS193N_API ASProjectileParent : public AActor
 {
 	GENERATED_BODY()
 	
@@ -27,21 +28,30 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USphereComponent* SphereComp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UProjectileMovementComponent* MovementComp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UParticleSystemComponent* EffectComp;
+
+	UPROPERTY(EditDefaultsOnly, Category="Effects")
+	UParticleSystem* ImpactVFX;
+
+	UFUNCTION()
+	virtual void OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	UFUNCTION(BlueprintCallable, BluPrintNativeEvent)
+	void Explode();
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	virtual void ProjectileEffect(APawn* InstigatorPawn) {};
+	
+	
 
 public:
-	void ProjectileAttack_Implementation(APawn* InstigatorPawn) override;
+	//void ProjectileAttack_Implementation(APawn* InstigatorPawn) override;
 };
