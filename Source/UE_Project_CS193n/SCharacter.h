@@ -11,6 +11,7 @@ class USpringArmComponent;
 class USInteractionComponent;
 class UAnimMontage;
 class USAttackComponent;
+class ASProjectileParent;
 
 UCLASS()
 class UE_PROJECT_CS193N_API ASCharacter : public ACharacter
@@ -30,8 +31,15 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	TSubclassOf<AActor> BlackholeClass;
 
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	TSubclassOf<AActor> DashClass;
+
+
+	float AttackDistance;
+
 	FTimerHandle TimerHandle_PrimaryAttack;
-	//FTimerHandle TimerHandle_BlackholeAttack;
+	FTimerHandle TimerHandle_BlackholeAttack;
+	FTimerHandle TimerHandle_Dash;
 
 protected:
 	// Called when the game starts or when spawned
@@ -60,7 +68,7 @@ protected:
 	/*Interact Function*/
 	void PrimaryInteract();
 
-
+	void SpawnProjectile(TSubclassOf<AActor> ClasstoSpawn);
 
 	/*Attack Function*/
 	void PrimaryAttack();
@@ -70,9 +78,9 @@ protected:
 	void PrimaryDash_TimeElapsed();
 
 
-	FRotator GetAimDirection(FVector EyeLoction,float AttackDistance);
-	//void BlackHoleAttack();
-	//void BlackholeAttack_TimeElapsed();
+	void BlackHoleAttack();
+	void BlackholeAttack_TimeElapsed();
+
 
 public:	
 	// Called every frame

@@ -5,6 +5,7 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ASProjectileParent::ASProjectileParent()
@@ -14,6 +15,10 @@ ASProjectileParent::ASProjectileParent()
 	AttackSpeed = 1000.f;
 
 	SphereComp = CreateDefaultSubobject<USphereComponent>("SphereComp");
+
+	SphereComp->SetCollisionProfileName("Projectile");
+	
+	SphereComp->OnComponentHit.AddDynamic(this, &ASProjectileParent::OnActorHit);        //这里提前注册了碰撞函数。
 
 	RootComponent = SphereComp;
 
@@ -29,18 +34,34 @@ ASProjectileParent::ASProjectileParent()
 
 	MovementComp->bInitialVelocityInLocalSpace = true;
 
-
-	SphereComp->SetCollisionProfileName("Projectile");
-
-
-
+	MovementComp->ProjectileGravityScale = 0.0f;
 }
 
 // Called when the game starts or when spawned
-void ASProjectileParent::BeginPlay()
+
+
+void ASProjectileParent::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	Super::BeginPlay();
-	
+	Explode();
+}
+
+
+void ASProjectileParent::Explode_Implementation()
+{
+	if (ensure(!IsPendingKill())) {      //修改处
+		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
+		
+		Destroy();
+	}
+}
+
+
+
+void ASProjectileParent::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
 }
 
 // Called every frame
@@ -50,8 +71,5 @@ void ASProjectileParent::Tick(float DeltaTime)
 
 }
 
-void ASProjectileParent::ProjectileAttack_Implementation(APawn* InstigatorPawn)
-{
-	
-}
+
 

@@ -15,13 +15,26 @@ class UE_PROJECT_CS193N_API ASProjectileDash_2 : public ASProjectileParent
 	GENERATED_BODY()
 public:
 	ASProjectileDash_2();
-	void ProjectileAttack_Implementation(APawn* InstigatorPawn) override;
 
-	void ProjectileEffect(APawn* InstigatorPawn) override;
+
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	FTimerHandle TimerHandle_DelayDetonate;
+	UPROPERTY(EditDefaultsOnly, Category = "Teleport")
+	float TeleportDelay;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Teleport")
+	float DetonateDelay;
+
+	virtual void Explode_Implementation() override;
+
+	void TeleportInstigator();
+
+
+
+
 
 public:
 	// Called every framer

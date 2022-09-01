@@ -21,13 +21,17 @@ class UE_PROJECT_CS193N_API ASProjectileParent : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ASProjectileParent();
+
+
 	UPROPERTY(VisibleAnywhere)
 	float AttackSpeed;
 	
 
 protected:
 	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+
+
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USphereComponent* SphereComp;
 
@@ -37,14 +41,17 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UParticleSystemComponent* EffectComp;
 
+
 	UPROPERTY(EditDefaultsOnly, Category="Effects")
 	UParticleSystem* ImpactVFX;
 
 	UFUNCTION()
 	virtual void OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
-	UFUNCTION(BlueprintCallable, BluPrintNativeEvent)
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void Explode();
+
+	virtual void PostInitializeComponents() override;
 
 public:	
 	// Called every frame

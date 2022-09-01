@@ -2,25 +2,48 @@
 
 
 #include "SProjectileDash_2.h"
+#include "Components/SphereComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 ASProjectileDash_2::ASProjectileDash_2()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	TeleportDelay = 0.2f;
+	DetonateDelay = 0.2f;
+	MovementComp->InitialSpeed = 6000.f;
 }
 
-void ASProjectileDash_2::ProjectileEffect(APawn* InstigatorPawn)
-{
-	throw std::logic_error("The method or operation is not implemented.");
-}
-
-void ASProjectileDash_2::ProjectileAttack_Implementation(APawn* InstigatorPawn)
-{
-	throw std::logic_error("The method or operation is not implemented.");
-}
 
 void ASProjectileDash_2::BeginPlay()
 {
 	Super::BeginPlay();
+	GetWorldTimerManager().SetTimer(TimerHandle_DelayDetonate, this, &ASProjectileDash_2::Explode, DetonateDelay);
+}
+
+void ASProjectileDash_2::Explode_Implementation()
+{
+	GetWorldTimerManager().ClearTimer(TimerHandle_DelayDetonate);
+
+	UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
+
+	EffectComp->DeactivateSystem();
+
+	MovementComp->StopMovementImmediately();
+
+	SetActorEnableCollision(false);
+
+	FTimerHandle TimerHandle_DelayTeleport;
+	GetWorldTimerManager().SetTimer(TimerHandle_DelayTeleport, this, &ASProjectileDash_2::TeleportInstigator, TeleportDelay);
+}
+
+void ASProjectileDash_2::TeleportInstigator()
+{
+	AActor* ActorToTeleport = GetInstigator();
+	if (ensure(ActorToTeleport)) {
+		ActorToTeleport->TeleportTo(GetActorLocation(), ActorToTeleport->GetActorRotation(), false, false);
+	}
 }
 
 void ASProjectileDash_2::Tick(float DeltaTime)
