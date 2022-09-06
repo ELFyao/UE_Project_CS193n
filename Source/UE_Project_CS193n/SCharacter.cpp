@@ -5,6 +5,7 @@
 #include "Camera/CameraComponent.h"
 #include"GameFramework/SpringArmComponent.h"
 #include"GameFramework/CharacterMovementComponent.h"
+#include "SAttributeComponent.h"
 #include "SInteractionComponent.h"
 #include "SAttackComponent.h"
 #include"DrawDebugHelpers.h"
@@ -21,6 +22,8 @@ ASCharacter::ASCharacter()
 
 	InteractionComp = CreateDefaultSubobject<USInteractionComponent>("InteractionComp");
 	AttackComp = CreateDefaultSubobject<USAttackComponent>("AttackComp");
+
+	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
 	
 	CameraComp->SetupAttachment(SpringArmComp);
 
@@ -132,6 +135,21 @@ void ASCharacter::BlackholeAttack_TimeElapsed()
 }
 
 
+
+
+void ASCharacter::onHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwingComp, float NewHealth, float Dealta)
+{
+	if (NewHealth <= 0 && Dealta < 0) {
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		DisableInput(PC);
+	}
+}
+
+void ASCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	AttributeComp->OnHealthChanged.AddDynamic(this, &ASCharacter::onHealthChanged);
+}
 
 void ASCharacter::SpawnProjectile(TSubclassOf<AActor> ClasstoSpawn)
 {

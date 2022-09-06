@@ -6,6 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 
 #include "PhysicsEngine/RadialForceComponent.h"
+#include "SAttributeComponent.h"
 
 // Sets default values
 ASExplosiveBarrel::ASExplosiveBarrel()
@@ -58,7 +59,13 @@ void ASExplosiveBarrel::PostInitializeComponents()
 void ASExplosiveBarrel::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	RadialForceComp->FireImpulse();
-	
+	if (OtherActor)
+	{
+		USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));
+		if (AttributeComp) {
+			AttributeComp->ApplyHealthChange(-50);
+		}
+	}
 	//if ((RadialForceComp != NULL)&&(OtherActor!=NULL)&&(OtherActor != this) && OtherComp!= NULL) {
 
 	//}

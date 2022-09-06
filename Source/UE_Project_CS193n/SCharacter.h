@@ -12,6 +12,7 @@ class USInteractionComponent;
 class UAnimMontage;
 class USAttackComponent;
 class ASProjectileParent;
+class USAttributeComponent;
 
 UCLASS()
 class UE_PROJECT_CS193N_API ASCharacter : public ACharacter
@@ -58,6 +59,8 @@ protected:
 	UPROPERTY(visibleAnywhere)
 	USpringArmComponent* SpringArmComp;
 
+	UPROPERTY(visibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USAttributeComponent* AttributeComp;
 
 	/*Movement Function*/
 	void MoveForward(float value);
@@ -81,6 +84,10 @@ protected:
 	void BlackHoleAttack();
 	void BlackholeAttack_TimeElapsed();
 
+	UFUNCTION()
+	void onHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwingComp, float NewHealth, float Dealta);
+
+	virtual void PostInitializeComponents() override;
 
 public:	
 	// Called every frame
