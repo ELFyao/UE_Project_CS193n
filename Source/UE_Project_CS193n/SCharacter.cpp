@@ -139,10 +139,17 @@ void ASCharacter::BlackholeAttack_TimeElapsed()
 
 void ASCharacter::onHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwingComp, float NewHealth, float Dealta)
 {
-	if (NewHealth <= 0 && Dealta < 0) {
-		APlayerController* PC = Cast<APlayerController>(GetController());
-		DisableInput(PC);
+	if (Dealta < 0) {
+		GetMesh()->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds) ;
+		if (NewHealth <= 0)
+		{
+			APlayerController* PC = Cast<APlayerController>(GetController());
+			DisableInput(PC);
+		}
 	}
+// 	if (NewHealth <= 0 && Dealta < 0) {
+// 
+// 	}
 }
 
 void ASCharacter::PostInitializeComponents()

@@ -6,6 +6,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "SAttributeComponent.h"
+#include "Components/AudioComponent.h"
 
 // Sets default values
 ASMagicProjectile::ASMagicProjectile()
@@ -20,7 +21,7 @@ ASMagicProjectile::ASMagicProjectile()
 	
 	EffectComp = CreateDefaultSubobject<UParticleSystemComponent>("EffectComp");
 
-
+	DamageAmount = -20.0f;
 
 	EffectComp->SetupAttachment(SphereComp);
 	
@@ -31,6 +32,8 @@ ASMagicProjectile::ASMagicProjectile()
 	MovementComp->bRotationFollowsVelocity = true;
 	MovementComp->bInitialVelocityInLocalSpace = true;
 
+
+	AudioComp = CreateDefaultSubobject<UAudioComponent>("AudioComp");
 
 	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ASMagicProjectile::OnActorOverlap);
 
@@ -45,7 +48,6 @@ ASMagicProjectile::ASMagicProjectile()
 void ASMagicProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -53,7 +55,7 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 	if (OtherActor && OtherActor != GetInstigator()) {
 		USAttributeComponent *AttributeComp = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));
 		if (AttributeComp) {
-			AttributeComp->ApplyHealthChange(-20.0f);
+			AttributeComp->ApplyHealthChange(DamageAmount);
 			Destroy();
 		}
 	}

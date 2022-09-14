@@ -9,6 +9,7 @@
 class USphereComponent;
 class UProjectileMovementComponent;
 class UParticleSystemComponent;
+class UAudioComponent;
 
 
 UCLASS()
@@ -19,7 +20,7 @@ class UE_PROJECT_CS193N_API ASMagicProjectile : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ASMagicProjectile();
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere)
 	float AttackSpeed;
 
 protected:
@@ -34,6 +35,13 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UParticleSystemComponent* EffectComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UAudioComponent* AudioComp;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float DamageAmount;
 
 	UFUNCTION()
 	void OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
