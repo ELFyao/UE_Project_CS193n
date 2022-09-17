@@ -33,6 +33,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool GetIsAlive();
 
+	UFUNCTION(BlueprintCallable)
+	bool GetIsFull();
+
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")

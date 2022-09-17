@@ -7,6 +7,8 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "SAttributeComponent.h"
 #include "Components/AudioComponent.h"
+#include "Kismet/GameplayStatics.h"
+
 
 // Sets default values
 ASMagicProjectile::ASMagicProjectile()
@@ -35,7 +37,9 @@ ASMagicProjectile::ASMagicProjectile()
 
 	AudioComp = CreateDefaultSubobject<UAudioComponent>("AudioComp");
 
-	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ASMagicProjectile::OnActorOverlap);
+	//ImpactAudioComp = CreateDefaultSubobject<UAudioComponent>("ImpactAudioComp");
+
+	
 
 	//设置球体碰撞的规则。
 	//SphereComp->SetCollisionObjectType(ECC_WorldDynamic);
@@ -48,6 +52,17 @@ ASMagicProjectile::ASMagicProjectile()
 void ASMagicProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+	//ImpactAudioComp->Deactivate();
+}
+
+void ASMagicProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
+	AudioComp->Deactivate();
+	UGameplayStatics::PlaySoundAtLocation(this, ImpactAudio, GetActorLocation(), GetActorRotation(),1.0,1.0,0.0);
+	UGameplayStatics::PlayWorldCameraShake(this, ImpactCameraShake, GetActorLocation(), 50, 150);
+	/*ImpactAudioComp->Activate();*/
+	Destroy();
 }
 
 void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -59,6 +74,13 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 			Destroy();
 		}
 	}
+}
+
+void ASMagicProjectile::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ASMagicProjectile::OnActorOverlap);
+	SphereComp->OnComponentHit.AddDynamic(this, &ASMagicProjectile::OnActorHit);
 }
 
 // Called every frame

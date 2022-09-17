@@ -24,7 +24,7 @@ void USInteractionComponent::PrimaryInteract()
 	//bool bBlockinghit = GetWorld()->LineTraceSingleByObjectType(Hit, Eyelocation, End, ObjectQueryParams);
 	TArray<FHitResult> Hits;
 
-	float Radius = 30.0f;
+	float Radius = 200.0f;
 	FCollisionShape Shape;
 	Shape.SetSphere(Radius);
 	bool bBlockinghit = GetWorld()->SweepMultiByObjectType(Hits, Eyelocation, End, FQuat::Identity, ObjectQueryParams, Shape);

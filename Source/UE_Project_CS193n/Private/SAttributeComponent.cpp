@@ -17,6 +17,13 @@ bool USAttributeComponent::GetIsAlive()
 	return Health > 0.0f;
 }
 
+
+
+bool USAttributeComponent::GetIsFull()
+{
+	return Health >= HealthMax;
+}
+
 void USAttributeComponent::BeginPlay()
 {
 	Super::BeginPlay();

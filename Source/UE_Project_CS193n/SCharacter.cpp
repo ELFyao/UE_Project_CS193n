@@ -9,6 +9,7 @@
 #include "SInteractionComponent.h"
 #include "SAttackComponent.h"
 #include"DrawDebugHelpers.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -162,6 +163,9 @@ void ASCharacter::SpawnProjectile(TSubclassOf<AActor> ClasstoSpawn)
 {
 	if (ensure(ClasstoSpawn))
 	{
+		
+		UGameplayStatics::SpawnEmitterAttached(HandFlashVFX, GetMesh(), "Muzzle_01");
+
 		FVector handsLocation = GetMesh()->GetSocketLocation("Muzzle_01");
 
 		/*
