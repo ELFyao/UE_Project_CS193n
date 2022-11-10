@@ -166,6 +166,15 @@ void ASCharacter::PostInitializeComponents()
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ASCharacter::onHealthChanged);
 }
 
+
+FVector ASCharacter::GetPawnViewLocation() const
+{
+	return CameraComp->GetComponentLocation();
+}
+
+
+
+
 void ASCharacter::SpawnProjectile(TSubclassOf<AActor> ClasstoSpawn)
 {
 	if (ensure(ClasstoSpawn))
