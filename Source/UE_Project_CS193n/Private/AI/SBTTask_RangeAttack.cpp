@@ -5,6 +5,16 @@
 #include "AIController.h"
 #include "GameFramework/Character.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "SAttributeComponent.h"
+
+
+
+USBTTask_RangeAttack::USBTTask_RangeAttack()
+{
+	MaxAttackSpread = 2.0f;
+}
+
+
 
 EBTNodeResult::Type USBTTask_RangeAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
@@ -15,14 +25,28 @@ EBTNodeResult::Type USBTTask_RangeAttack::ExecuteTask(UBehaviorTreeComponent& Ow
 		if (MyPawn == NULL) {
 			return EBTNodeResult::Failed;
 		}
+
+
 		FVector HandsLocation = MyPawn->GetMesh()->GetSocketLocation("Muzzle_Front");
 		UBlackboardComponent *blackboardComp = OwnerComp.GetBlackboardComponent();
 		AActor* TargetActor = Cast<AActor>(blackboardComp->GetValueAsObject("TargetActor"));
 		if (TargetActor == NULL) {
 			return EBTNodeResult::Failed;
 		}
+
+		if (!USAttributeComponent::IsActorAlive(TargetActor))
+		{
+			return EBTNodeResult::Failed;
+		}
+
+
 		FVector TargetLocation = TargetActor->GetActorLocation();
 		FRotator AimDirection = (TargetLocation - HandsLocation).Rotation();
+
+		AimDirection.Pitch += FMath::RandRange(0.0f, MaxAttackSpread);
+		AimDirection.Yaw += FMath::RandRange(-MaxAttackSpread, MaxAttackSpread);
+
+
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Instigator = MyPawn;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -31,3 +55,4 @@ EBTNodeResult::Type USBTTask_RangeAttack::ExecuteTask(UBehaviorTreeComponent& Ow
 	}
 	return EBTNodeResult::Failed;
 }
+

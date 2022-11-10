@@ -22,10 +22,10 @@ class UE_PROJECT_CS193N_API ASMagicProjectile : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ASMagicProjectile();
-	UPROPERTY(EditAnywhere)
-	float AttackSpeed;
+
 
 protected:
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -35,26 +35,31 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UProjectileMovementComponent *MovementComp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UParticleSystemComponent* EffectComp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Sounds")
 	UAudioComponent* AudioComp;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sounds")
 	USoundBase* ImpactAudio;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effects")
+	UParticleSystemComponent* EffectComp;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
 	TSubclassOf<UCameraShakeBase> ImpactCameraShake;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
 	UParticleSystem* ImpactVFX;
 
 // 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 // 	TSubclassOf<UCameraShake>* ClassToShake;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
 	float DamageAmount;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	float AttackSpeed;
 
 	UFUNCTION()
 	void OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

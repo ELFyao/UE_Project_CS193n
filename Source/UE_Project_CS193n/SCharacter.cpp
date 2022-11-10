@@ -33,6 +33,8 @@ ASCharacter::ASCharacter()
 	bUseControllerRotationYaw = false;
 
 	AttackDistance = 5000.f;
+	HandSocketName = "Muzzle_01";
+	TimeToHitParams = "TimeToHit";
 
 }
 
@@ -67,6 +69,11 @@ void ASCharacter::Tick(float DeltaTime)
 	DrawDebugDirectionalArrow(GetWorld(), LineStart, ControllerDirection_LineEnd, DrawScale, FColor::Green, false, 0.0f, 0, Thickness);
 
 
+}
+
+void ASCharacter::HealSelf(float Amount /*= 100*/)
+{
+	AttributeComp->ApplyHealthChange(this, Amount);
 }
 
 // Called to bind functionality to input
@@ -141,7 +148,7 @@ void ASCharacter::BlackholeAttack_TimeElapsed()
 void ASCharacter::onHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwingComp, float NewHealth, float Dealta)
 {
 	if (Dealta < 0) {
-		GetMesh()->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds) ;
+		GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParams, GetWorld()->TimeSeconds) ;
 		if (NewHealth <= 0)
 		{
 			APlayerController* PC = Cast<APlayerController>(GetController());
@@ -164,9 +171,9 @@ void ASCharacter::SpawnProjectile(TSubclassOf<AActor> ClasstoSpawn)
 	if (ensure(ClasstoSpawn))
 	{
 		
-		UGameplayStatics::SpawnEmitterAttached(HandFlashVFX, GetMesh(), "Muzzle_01");
+		UGameplayStatics::SpawnEmitterAttached(HandFlashVFX, GetMesh(), HandSocketName);
 
-		FVector handsLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+		FVector handsLocation = GetMesh()->GetSocketLocation(HandSocketName);
 
 		/*
 		* assignment_2 part3 start here.

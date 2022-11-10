@@ -8,6 +8,7 @@
 #include "SAttributeComponent.h"
 #include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "SGameplayFunctionLibrary.h"
 
 
 // Sets default values
@@ -37,9 +38,9 @@ ASMagicProjectile::ASMagicProjectile()
 
 	AudioComp = CreateDefaultSubobject<UAudioComponent>("AudioComp");
 
-	//ImpactAudioComp = CreateDefaultSubobject<UAudioComponent>("ImpactAudioComp");
+	AudioComp->SetupAttachment(RootComponent);
 
-	
+	//ImpactAudioComp = CreateDefaultSubobject<UAudioComponent>("ImpactAudioComp");
 
 	//设置球体碰撞的规则。
 	//SphereComp->SetCollisionObjectType(ECC_WorldDynamic);
@@ -60,7 +61,7 @@ void ASMagicProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Ot
 	UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
 	AudioComp->Deactivate();
 	UGameplayStatics::PlaySoundAtLocation(this, ImpactAudio, GetActorLocation(), GetActorRotation(),1.0,1.0,0.0);
-	UGameplayStatics::PlayWorldCameraShake(this, ImpactCameraShake, GetActorLocation(), 50, 150);
+	//UGameplayStatics::PlayWorldCameraShake(this, ImpactCameraShake, GetActorLocation(), 50, 150);
 	/*ImpactAudioComp->Activate();*/
 	Destroy();
 }
@@ -68,11 +69,19 @@ void ASMagicProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Ot
 void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != GetInstigator()) {
-		USAttributeComponent *AttributeComp = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));
-		if (AttributeComp) {
-			AttributeComp->ApplyHealthChange(DamageAmount);
+		//UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
+		//USAttributeComponent *AttributeComp = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));
+		//if (AttributeComp) {
+		//	AttributeComp->ApplyHealthChange(GetInstigator(),DamageAmount);
+		//	UGameplayStatics::PlayWorldCameraShake(this, ImpactCameraShake, GetActorLocation(), 100, 500);
+		//	Destroy();
+		//}
+		if (USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
+		{
+			UGameplayStatics::PlayWorldCameraShake(this, ImpactCameraShake, GetActorLocation(), 100, 500);
 			Destroy();
 		}
+
 	}
 }
 

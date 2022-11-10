@@ -17,8 +17,14 @@ public:
 	// Sets default values for this component's properties
 	USAttributeComponent();
 
+	static USAttributeComponent* GetAttributes(AActor *FromActor);
+	static bool IsActorAlive(AActor* FromActor);
+
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	float LowHealthThreshold;
+
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category = "Attributes")
 	float Health;
 	// Called when the game starts
@@ -33,11 +39,22 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool GetIsAlive();
 
+	bool GetIsLowHealth();
+
+	bool HealMax();
+
+	float GetHealth();
+
+	float GetMaxHitPoint();
+
 	UFUNCTION(BlueprintCallable)
 	bool GetIsFull();
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable)
+	bool Kill(AActor* InstigatorActor);
+
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
-	bool ApplyHealthChange(float Delta);
+	bool ApplyHealthChange(AActor* InstigatorActor, float Delta);
 };

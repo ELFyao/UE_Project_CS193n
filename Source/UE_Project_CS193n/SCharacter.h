@@ -24,6 +24,12 @@ public:
 	ASCharacter();
 	
 protected:
+	UPROPERTY(VisibleAnywhere, Category = "Effects")
+	FName HandSocketName;
+
+	UPROPERTY(VisibleAnywhere, Category = "Effects")
+	FName TimeToHitParams;
+
 	UPROPERTY(EditAnywhere, Category="Attack")
 	TSubclassOf<AActor> ProjectileClass;
 	UPROPERTY(EditAnywhere, Category = "Attack")
@@ -49,20 +55,21 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	UParticleSystem* HandFlashVFX;
 
-	UPROPERTY(visibleAnywhere)
+	UPROPERTY(VisibleAnywhere)
 	USInteractionComponent *InteractionComp;
 
-	UPROPERTY(visibleAnywhere)
+	UPROPERTY(VisibleAnywhere)
 	USAttackComponent *AttackComp;
 	
 
-	UPROPERTY(visibleAnywhere)
+
+	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* CameraComp;
 
-	UPROPERTY(visibleAnywhere)
+	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArmComp;
 
-	UPROPERTY(visibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USAttributeComponent* AttributeComp;
 
 	/*Movement Function*/
@@ -95,6 +102,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(EXEC)
+	void HealSelf(float Amount = 100);
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

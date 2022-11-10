@@ -14,11 +14,16 @@ class UE_PROJECT_CS193N_API USBTTask_RangeAttack : public UBTTaskNode
 {
 	GENERATED_BODY()
 
-
+		
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 protected:
 	UPROPERTY(EditAnywhere, Category= "AI")
 	TSubclassOf<AActor> ProjectileClass;
 
+	UPROPERTY(EditAnywhere, Category = "AI")
+	float MaxAttackSpread;
+
+public:
+	USBTTask_RangeAttack();
 
 };

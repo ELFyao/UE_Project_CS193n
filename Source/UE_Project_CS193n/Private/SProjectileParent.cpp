@@ -6,6 +6,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/AudioComponent.h"
 
 // Sets default values
 ASProjectileParent::ASProjectileParent()
@@ -35,6 +36,10 @@ ASProjectileParent::ASProjectileParent()
 	MovementComp->bInitialVelocityInLocalSpace = true;
 
 	MovementComp->ProjectileGravityScale = 0.0f;
+
+	AudioComp = CreateDefaultSubobject<UAudioComponent>("AudioComp");
+
+	AudioComp->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned

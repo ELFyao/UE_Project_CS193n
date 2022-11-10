@@ -5,6 +5,8 @@
 #include "SGameplayInterface.h"
 #include "DrawDebugHelpers.h"
 
+static TAutoConsoleVariable<bool> CVarDrawDebugShape(TEXT("su.DrawDebugShape"), false, TEXT("Enable Drawing Debug Shape When Interacting with something"), ECVF_Cheat);
+
 void USInteractionComponent::PrimaryInteract()
 {
 	FCollisionObjectQueryParams ObjectQueryParams;
@@ -41,9 +43,15 @@ void USInteractionComponent::PrimaryInteract()
 				break;
 			}
 		}
-		DrawDebugSphere(GetWorld(), Hit.ImpactPoint, Radius, 32, LineColor, false, 2.0f);
+		if (CVarDrawDebugShape.GetValueOnGameThread())
+		{
+			DrawDebugSphere(GetWorld(), Hit.ImpactPoint, Radius, 32, LineColor, false, 2.0f);
+		}
 	}
-	DrawDebugLine(GetWorld(), Eyelocation, End, FColor::Red, false, 2.0f,0,2.0f);
+	if (CVarDrawDebugShape.GetValueOnGameThread())
+	{
+		DrawDebugLine(GetWorld(), Eyelocation, End, FColor::Red, false, 2.0f,0,2.0f);
+	}
 }
 
 // Sets default values for this component's properties

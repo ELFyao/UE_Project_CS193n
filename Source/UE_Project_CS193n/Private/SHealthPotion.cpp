@@ -24,7 +24,7 @@ void ASHealthPotion::Interact_Implementation(APawn* InstigatorPawn)
 		if (AttributeComp) {
 			if (AttributeComp->GetIsFull() == false && bIsCooldown)
 			{
-				AttributeComp->ApplyHealthChange(HealVolume);
+				AttributeComp->ApplyHealthChange(InstigatorPawn, HealVolume);
 				bIsCooldown = false;
 				Pick();
 			}
