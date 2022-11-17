@@ -4,8 +4,8 @@
 #include "SInteractionComponent.h"
 #include "SGameplayInterface.h"
 #include "DrawDebugHelpers.h"
+#include "SCVarObject.h"
 
-static TAutoConsoleVariable<bool> CVarDrawDebugShape(TEXT("su.DrawDebugShape"), false, TEXT("Enable Drawing Debug Shape When Interacting with something"), ECVF_Cheat);
 
 void USInteractionComponent::PrimaryInteract()
 {

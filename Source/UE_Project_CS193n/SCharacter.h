@@ -13,6 +13,8 @@ class UAnimMontage;
 class USAttackComponent;
 class ASProjectileParent;
 class USAttributeComponent;
+class USActionComponent;
+class USAction;
 
 UCLASS()
 class UE_PROJECT_CS193N_API ASCharacter : public ACharacter
@@ -23,45 +25,23 @@ public:
 	// Sets default values for this character's properties
 	ASCharacter();
 	
-protected:
-	UPROPERTY(VisibleAnywhere, Category = "Effects")
-	FName HandSocketName;
-
-	UPROPERTY(VisibleAnywhere, Category = "Effects")
-	FName TimeToHitParams;
-
-	UPROPERTY(EditAnywhere, Category="Attack")
-	TSubclassOf<AActor> ProjectileClass;
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	UAnimMontage* AttackAnim;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> BlackholeClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> DashClass;
-
-
-	float AttackDistance;
-
-	FTimerHandle TimerHandle_PrimaryAttack;
-	FTimerHandle TimerHandle_BlackholeAttack;
-	FTimerHandle TimerHandle_Dash;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Effects")
-	UParticleSystem* HandFlashVFX;
+	UPROPERTY(EditAnywhere, Category = "Actions")
+	TArray<TSubclassOf<USAction>> ActionClasses;
+
 
 	UPROPERTY(VisibleAnywhere)
 	USInteractionComponent *InteractionComp;
 
-	UPROPERTY(VisibleAnywhere)
-	USAttackComponent *AttackComp;
-	
+	UPROPERTY(VisibleAnywhere, Category = "Effects")
+	FName TimeToHitParams;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	USActionComponent *ActionComp;
 
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* CameraComp;
@@ -78,21 +58,23 @@ protected:
 	void JumpStart();
 	void JumpEnd();
 
+	void StartSprint();
+	void StopSprint();
+
+
+
+
 	/*Interact Function*/
 	void PrimaryInteract();
 
-	void SpawnProjectile(TSubclassOf<AActor> ClasstoSpawn);
 
 	/*Attack Function*/
 	void PrimaryAttack();
-	void PrimaryAttack_TimeElapsed();
 
 	void PrimaryDash();
-	void PrimaryDash_TimeElapsed();
 
 
 	void BlackHoleAttack();
-	void BlackholeAttack_TimeElapsed();
 
 	UFUNCTION()
 	void onHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwingComp, float NewHealth, float Dealta);

@@ -43,7 +43,7 @@ protected:
 	void OnQueryFinished(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
 
 	//void OnActorKilled(AActor* VictimActor, AActor* Killer);
-
+	UFUNCTION()
 	void RespawnPlayerElapsed(AController* controller);
 
 	UFUNCTION(Exec)

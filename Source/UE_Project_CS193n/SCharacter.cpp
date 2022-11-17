@@ -10,7 +10,9 @@
 #include "SAttackComponent.h"
 #include"DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "SActionComponent.h"
+#include "SAction.h"
+#include "SCVarObject.h"
 // Sets default values
 ASCharacter::ASCharacter()
 {
@@ -22,27 +24,24 @@ ASCharacter::ASCharacter()
 	SpringArmComp->bUsePawnControlRotation = true;
 
 	InteractionComp = CreateDefaultSubobject<USInteractionComponent>("InteractionComp");
-	AttackComp = CreateDefaultSubobject<USAttackComponent>("AttackComp");
+	//AttackComp = CreateDefaultSubobject<USAttackComponent>("AttackComp");
 
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
+
+	ActionComp = CreateDefaultSubobject<USActionComponent>("ActionComp");
 	
 	CameraComp->SetupAttachment(SpringArmComp);
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	
 	bUseControllerRotationYaw = false;
-
-	AttackDistance = 5000.f;
-	HandSocketName = "Muzzle_01";
 	TimeToHitParams = "TimeToHit";
-
 }
 
 // Called when the game starts or when spawned
 void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 
@@ -53,22 +52,24 @@ void ASCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	// -- Rotation Visualization -- //
-	const float DrawScale = 100.0f;
-	const float Thickness = 5.0f;
 
-	FVector LineStart = GetActorLocation();
-	// Offset to the right of pawn
-	LineStart += GetActorRightVector() * 100.0f;
-	// Set line end in direction of the actor's forward
-	FVector ActorDirection_LineEnd = LineStart + (GetActorForwardVector() * 100.0f);
-	// Draw Actor's Direction
-	DrawDebugDirectionalArrow(GetWorld(), LineStart, ActorDirection_LineEnd, DrawScale, FColor::Yellow, false, 0.0f, 0, Thickness);
+	if (CVarDrawDebugShape.GetValueOnGameThread())
+	{
+		const float DrawScale = 100.0f;
+		const float Thickness = 5.0f;
 
-	FVector ControllerDirection_LineEnd = LineStart + (GetControlRotation().Vector() * 100.0f);
-	// Draw 'Controller' Rotation ('PlayerController' that 'possessed' this character)
-	DrawDebugDirectionalArrow(GetWorld(), LineStart, ControllerDirection_LineEnd, DrawScale, FColor::Green, false, 0.0f, 0, Thickness);
+		FVector LineStart = GetActorLocation();
+		// Offset to the right of pawn
+		LineStart += GetActorRightVector() * 100.0f;
+		// Set line end in direction of the actor's forward
+		FVector ActorDirection_LineEnd = LineStart + (GetActorForwardVector() * 100.0f);
+		// Draw Actor's Direction
+		DrawDebugDirectionalArrow(GetWorld(), LineStart, ActorDirection_LineEnd, DrawScale, FColor::Yellow, false, 0.0f, 0, Thickness);
 
-
+		FVector ControllerDirection_LineEnd = LineStart + (GetControlRotation().Vector() * 100.0f);
+		// Draw 'Controller' Rotation ('PlayerController' that 'possessed' this character)
+		DrawDebugDirectionalArrow(GetWorld(), LineStart, ControllerDirection_LineEnd, DrawScale, FColor::Green, false, 0.0f, 0, Thickness);
+	}
 }
 
 void ASCharacter::HealSelf(float Amount /*= 100*/)
@@ -96,51 +97,47 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &ASCharacter::PrimaryInteract);
 	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &ASCharacter::PrimaryDash);
 
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASCharacter::StartSprint);
 
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::StopSprint);
+
+
+
+}
+
+
+void ASCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	AttributeComp->OnHealthChanged.AddDynamic(this, &ASCharacter::onHealthChanged);
+
+	for (TSubclassOf<USAction> ActionClass : ActionClasses)
+	{
+		ActionComp->AddAction(ActionClass);
+	}
 }
 
 void ASCharacter::PrimaryAttack()
 {
-	PlayAnimMontage(AttackAnim);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::PrimaryAttack_TimeElapsed, 0.2f);
-
-	// if something goes wrong like character died; 
-	//GetWorldTimerManager().ClearTimer(TimerHandle_PrimaryAttack);
-}
-
-void ASCharacter::PrimaryAttack_TimeElapsed()
-{
-	SpawnProjectile(ProjectileClass);
+	ActionComp->StartActionByName(this, "PrimaryAttack");
 }
 
 
 
 void ASCharacter::PrimaryDash()
 {
-	PlayAnimMontage(AttackAnim);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::PrimaryDash_TimeElapsed, 0.2f);
+	ActionComp->StartActionByName(this, "PrimaryDash");
 }
 
-void ASCharacter::PrimaryDash_TimeElapsed()
-{
-	SpawnProjectile(DashClass);
-}
+
 
 
 void ASCharacter::BlackHoleAttack()
 {
-	PlayAnimMontage(AttackAnim);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::BlackholeAttack_TimeElapsed, 0.2f);
+	ActionComp->StartActionByName(this, "BlackHole");
 }
 
 
-void ASCharacter::BlackholeAttack_TimeElapsed()
-{
-	SpawnProjectile(BlackholeClass);
-}
 
 
 
@@ -160,89 +157,13 @@ void ASCharacter::onHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 // 	}
 }
 
-void ASCharacter::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-	AttributeComp->OnHealthChanged.AddDynamic(this, &ASCharacter::onHealthChanged);
-}
+
 
 
 FVector ASCharacter::GetPawnViewLocation() const
 {
 	return CameraComp->GetComponentLocation();
 }
-
-
-
-
-void ASCharacter::SpawnProjectile(TSubclassOf<AActor> ClasstoSpawn)
-{
-	if (ensure(ClasstoSpawn))
-	{
-		
-		UGameplayStatics::SpawnEmitterAttached(HandFlashVFX, GetMesh(), HandSocketName);
-
-		FVector handsLocation = GetMesh()->GetSocketLocation(HandSocketName);
-
-		/*
-		* assignment_2 part3 start here.
-		*/
-
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpawnParams.Instigator = this;
-
-
-
-		// line trace
-		FVector ControlLocation = CameraComp->GetComponentLocation();
-		FRotator ControlRotation = GetControlRotation();
-
-		FCollisionObjectQueryParams ObjectQueryParams;
-		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-		ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);      //这里由ECC_PhysicsBody 改成了ECC_Pawn
-		FVector End = ControlLocation + (ControlRotation.Vector() * AttackDistance);
-
-		FHitResult Hit;
-
-		FVector AttackEnd;
-
-		FCollisionShape Shape;
-		Shape.SetSphere(20.0f);
-
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(this);
-		//bool bBlockingHit = GetWorld()->LineTraceSingleByObjectType(Hit, ControlLocation, End, ObjectQueryParams);
-		bool bBlockingHit = GetWorld()->SweepSingleByObjectType(Hit, ControlLocation, End, FQuat::Identity, ObjectQueryParams, Shape, Params);
-		if (bBlockingHit) {
-			AttackEnd = Hit.ImpactPoint;
-		}
-		else
-		{
-			AttackEnd = End;
-		}
-
-		FRotator AttackDirection = (AttackEnd - handsLocation).Rotation();
-		FTransform SpawnTM = FTransform(AttackDirection, handsLocation);
-		GetWorld()->SpawnActor<AActor>(ClasstoSpawn, SpawnTM, SpawnParams);
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -274,6 +195,17 @@ void ASCharacter::JumpStart()
 void ASCharacter::JumpEnd()
 {
 	bPressedJump = false;
+}
+
+void ASCharacter::StartSprint()
+{
+	ActionComp->StartActionByName(this, "Sprint");
+
+}
+
+void ASCharacter::StopSprint()
+{
+	ActionComp->StopActionByName(this, "Sprint");
 }
 
 void ASCharacter::PrimaryInteract()

@@ -95,6 +95,8 @@ bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 	float actualDelta = Health - old_Health;
 	OnHealthChanged.Broadcast(InstigatorActor, this, Health, actualDelta);
 
+
+	// died
 	if (actualDelta < 0.0f && Health == 0.0f) {
 		ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
 		if (GM) {

@@ -11,6 +11,7 @@
 #include "SWorldUserWidget.h"
 #include "GameFramework/Character.h"
 #include "Components/CapsuleComponent.h"
+#include "SCVarObject.h"
 
 // Sets default values
 ASAICharacter::ASAICharacter()
@@ -95,7 +96,9 @@ void ASAICharacter::OnSeePawn(APawn* Pawn)
 	if (AIC)
 	{
 		SetTargetActor(Pawn);
-		DrawDebugString(GetWorld(), GetActorLocation(), FString::Printf(TEXT("Sense Pawn at %s"), *GetActorLocation().ToString()) ,NULL ,FColor::White, 5.0f, true);
+		if (CVarDrawDebugShape.GetValueOnGameThread()) {
+			DrawDebugString(GetWorld(), GetActorLocation(), FString::Printf(TEXT("Sense Pawn at %s"), *GetActorLocation().ToString()), NULL, FColor::White, 5.0f, true);
+		}
 	}
 }
 
