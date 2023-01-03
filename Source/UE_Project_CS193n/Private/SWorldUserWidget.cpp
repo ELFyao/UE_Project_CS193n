@@ -18,8 +18,8 @@ void USWorldUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 		
 		return;
 	}
-
-	if (UGameplayStatics::ProjectWorldToScreen(GetOwningPlayer(), AttachActor->GetActorLocation(), ScreenPosition))
+	FVector WorlfOffset = FVector(0, 0, 90);
+	if (UGameplayStatics::ProjectWorldToScreen(GetOwningPlayer(), AttachActor->GetActorLocation()+WorlfOffset, ScreenPosition))
 	{
 		float scale = UWidgetLayoutLibrary::GetViewportScale(this);
 

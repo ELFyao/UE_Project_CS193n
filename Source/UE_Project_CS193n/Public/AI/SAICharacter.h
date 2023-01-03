@@ -11,6 +11,7 @@ class UPawnSensingComponent;
 class USAttributeComponent;
 class UUserWidget;
 class USWorldUserWidget;
+class USActionComponent;
 
 UCLASS()
 class UE_PROJECT_CS193N_API ASAICharacter : public ACharacter
@@ -34,6 +35,9 @@ protected:
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USActionComponent* ActionComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USAttributeComponent* AttributeComp;
 	
 	virtual void PostInitializeComponents() override;
@@ -42,10 +46,13 @@ protected:
 
 	FTimerHandle TimerHandle_Death;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Credits")
+	int32 BonusCreditsAmount;
+
+
 
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	FName TimeToHitParams;
-
 
 	UFUNCTION()
 	void onHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwingComp, float NewHealth, float Dealta);

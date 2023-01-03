@@ -12,6 +12,7 @@
 #include "GameFramework/Character.h"
 #include "Components/CapsuleComponent.h"
 #include "SCVarObject.h"
+#include "ASPlayerState.h"
 
 // Sets default values
 ASAICharacter::ASAICharacter()
@@ -25,7 +26,7 @@ ASAICharacter::ASAICharacter()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
 	GetMesh()->SetGenerateOverlapEvents(true);
 
-
+	BonusCreditsAmount = 100;
 	TimeToHitParams = "TimeToHit";
 }
 
@@ -56,6 +57,12 @@ void ASAICharacter::onHealthChanged(AActor* InstigatorActor, USAttributeComponen
 		ActiveHealthBar->AttachActor = this;
 		ActiveHealthBar->AddToViewport();      //when we call this, would call USWorldUserWidget.construct()
 	}
+	if (!ActiveHealthBar->IsInViewport())
+	{
+		ActiveHealthBar->AddToViewport();      //when we call this, would call USWorldUserWidget.construct()
+	}
+
+
 
 	GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParams, GetWorld()->TimeSeconds);
 
@@ -65,6 +72,15 @@ void ASAICharacter::onHealthChanged(AActor* InstigatorActor, USAttributeComponen
 		// Behavior Tree End
 		// Rag doll
 		AAIController* AIC = Cast<AAIController>(GetController());
+
+		// playerState
+		AASPlayerState* playerState = AIC->GetPlayerState<AASPlayerState>();
+
+		if (ensure(playerState))
+		{
+			playerState->AddCredits(BonusCreditsAmount);
+		}
+		
 		if (ensure(AIC)) {
 			AIC->GetBrainComponent()->StopLogic("Killed");
 		}
@@ -77,6 +93,9 @@ void ASAICharacter::onHealthChanged(AActor* InstigatorActor, USAttributeComponen
 
 
 		SetLifeSpan(5);
+
+
+
 		GetWorldTimerManager().SetTimer(TimerHandle_Death, this, &ASAICharacter::Death,5.0f);
 	}
 }

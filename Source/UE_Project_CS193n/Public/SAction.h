@@ -4,7 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "GameplayTagContainer.h"
 #include "SAction.generated.h"
+
+
+class USActionComponent;
 
 /**
  * 
@@ -14,14 +18,38 @@ class UE_PROJECT_CS193N_API USAction : public UObject
 {
 	GENERATED_BODY()
 
+protected:
+
+	bool bIsRunning;
+
+
+	UPROPERTY(EditDefaultsOnly, Category = "Tags")
+	FGameplayTagContainer GrantsTags;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Tags")
+	FGameplayTagContainer BlockedTags;
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	USActionComponent* GetOwingComponent() const;
 public:
+
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	bool GetIsRunning();
+
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Action")
+	bool CanStart(AActor* InstigatorActor);
+
 	UFUNCTION(BlueprintNativeEvent, Category = "Action")
 	void StartAction(AActor* InstigatorActor);
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Action")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void StopAction(AActor* InstigatorActor);
 
 	UPROPERTY(EditDefaultsOnly, Category="Action")
 	FName ActionName;
+
+	UWorld* GetWorld() const override;
 
 };

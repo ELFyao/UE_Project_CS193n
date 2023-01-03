@@ -21,19 +21,20 @@ public:
 	ASItemBase();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	UPROPERTY(EditDefaultsOnly, Category = "HealthProperty")
+	float CooldownSeconds;
 
 
+	bool bIsCooldown;
 public:	
-	// Called every frame
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void Pick();
+	UFUNCTION()
+	virtual void CooldownOver();
+
+	UFUNCTION()
+	virtual bool PlayFunction(APawn* InstigatorPawn);
 
 	FTimerHandle CooldownTimer;
-
-	virtual void Tick(float DeltaTime) override;
 
 public:
 

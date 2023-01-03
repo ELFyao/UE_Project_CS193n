@@ -13,18 +13,19 @@ UCLASS()
 class UE_PROJECT_CS193N_API ASHealthPotion : public ASItemBase
 {
 	GENERATED_BODY()
+protected:
 
-
-public:
-	UPROPERTY(EditAnywhere, Category = "HealthProperty")
+	UPROPERTY(EditDefaultsOnly, Category = "HealthProperty")
 	float HealVolume;
+
+	UPROPERTY(EditDefaultsOnly, Category = "HealthCost")
+	int32 CreditsCost;
+public:
 
 
 	ASHealthPotion();
 
 
-	bool bIsCooldown;
-	void CooldownOver();
-	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
-	virtual void Pick_Implementation() override;
+	virtual bool PlayFunction(APawn* InstigatorPawn) override;
+
 };

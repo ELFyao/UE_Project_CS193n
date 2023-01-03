@@ -12,6 +12,7 @@
 class UEnvQuery;
 class UCurveFloat;
 class UEnvQueryInstanceBlueprintWrapper;
+class ASItemBase;
 /**
  * 
  */
@@ -25,6 +26,20 @@ public:
 	virtual void StartPlay() override;
 	void OnActorKilled(AActor* VictimActor, AActor* Killer);
 protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Item")
+	UEnvQuery* ItemQuery;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Item")
+	TSubclassOf<ASItemBase> HealthPotionClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Item")
+	TSubclassOf<ASItemBase> CreditsCoinClass;
+
+
+
+
+
+
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	UEnvQuery* SpawnBotQuery;
 
@@ -34,13 +49,27 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	UCurveFloat* diffcultCurve;
 
+	FTimerHandle TimerHandle_SpawnItem;
+
 	FTimerHandle TimerHandle_SpawnBots;
+
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	float SpawnTimeInterval;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Item")
+	float SpawnItem_TimeInterval;
+
 	UFUNCTION()
 	void SpawnBotTimeElapsed();
+
+	UFUNCTION()
+	void SpawnItemTimeElapsed();
+
 	UFUNCTION()
 	void OnQueryFinished(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
+
+	UFUNCTION()
+	void OnItemQueryFinished(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
 
 	//void OnActorKilled(AActor* VictimActor, AActor* Killer);
 	UFUNCTION()

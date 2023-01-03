@@ -3,38 +3,38 @@
 
 #include "SHealthPotion.h"
 #include "SAttributeComponent.h"
+#include "ASPlayerState.h"
 
 ASHealthPotion::ASHealthPotion()
 {
-	bIsCooldown = true;
+	HealVolume = 125.0f;
+	CreditsCost = 500;
 }
 
-void ASHealthPotion::CooldownOver()
-{
-	BaseMesh->SetScalarParameterValueOnMaterials("bIsUsed", 1);
-	bIsCooldown = true;
-}
 
-void ASHealthPotion::Interact_Implementation(APawn* InstigatorPawn)
+
+bool ASHealthPotion::PlayFunction(APawn* InstigatorPawn)
 {
-	//apply functionality of Health Potion
-	//USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));
 	if (InstigatorPawn) {
 		USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(InstigatorPawn->GetComponentByClass(USAttributeComponent::StaticClass()));
+		AASPlayerState *playerstate = InstigatorPawn->GetPlayerState<AASPlayerState>();
+		
+		ensureAlways(playerstate);
+
+		if ( !playerstate->RemoveCredits(CreditsCost)) {
+			
+			FString DebugMsg = FString::Printf(TEXT("Healing Failed : required at least %d"), CreditsCost);
+			GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Red, DebugMsg);
+
+			return false;
+		}
 		if (AttributeComp) {
-			if (AttributeComp->GetIsFull() == false && bIsCooldown)
+			if (AttributeComp->GetIsFull() == false)
 			{
 				AttributeComp->ApplyHealthChange(InstigatorPawn, HealVolume);
-				bIsCooldown = false;
-				Pick();
+				return true;
 			}
 		}
 	}
+	return false;
 }
-
- void ASHealthPotion::Pick_Implementation()
- {
-	// apply vision effect of Health Potion after healing;
-	 BaseMesh->SetScalarParameterValueOnMaterials("bIsUsed", -1);
-	 GetWorldTimerManager().SetTimer(CooldownTimer, this, &ASHealthPotion::CooldownOver, 5.0f);
- }

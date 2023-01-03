@@ -14,37 +14,29 @@ ASItemBase::ASItemBase()
 	PrimaryActorTick.bCanEverTick = true;
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
 	
+	bIsCooldown = true;
+	CooldownSeconds = 5.0f;
 }
 
-// Called when the game starts or when spawned
-void ASItemBase::BeginPlay()
+void ASItemBase::CooldownOver()
 {
-	Super::BeginPlay();
-	
+	BaseMesh->SetVisibility(true);
+	bIsCooldown = true;
 }
 
-// void ASItemBase::Pick_Implementation()               //BlueprintNativeEvent 必须在后面加上 _Implementation.
-// {
-// 	BaseMesh->SetVisibility(false);
-// 	FTimerDelegate RespawnDelegate = FTimerDelegate::CreateUObject(GetWorld(), &BaseMesh->SetVisibility, true);
-// 	GetWorldTimerManager().SetTimer(CooldownTimer, RespawnDelegate, 5.0f);
-// 
-// }
-
-void ASItemBase::Pick_Implementation()
+bool ASItemBase::PlayFunction(APawn* InstigatorPawn)
 {
-
-}
-
-// Called every frame
-void ASItemBase::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
+	return true;
 }
 
 void ASItemBase::Interact_Implementation(APawn* InstigatorPawn)
 {
+	if (bIsCooldown && PlayFunction(InstigatorPawn))
+	{
+		BaseMesh->SetVisibility(false);
+		bIsCooldown = false;
+		GetWorldTimerManager().SetTimer(CooldownTimer, this, &ASItemBase::CooldownOver, CooldownSeconds);
+	}
 
 }
 

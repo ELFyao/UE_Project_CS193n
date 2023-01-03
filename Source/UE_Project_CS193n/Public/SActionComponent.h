@@ -3,8 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Components/ActorComponent.h" 
 #include "SAction.h"
+#include "GameplayTagContainer.h"
 #include "SActionComponent.generated.h"
 
 
@@ -16,6 +17,9 @@ class UE_PROJECT_CS193N_API USActionComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	USActionComponent();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tags")
+	FGameplayTagContainer AcitveGameplayTags;
 
 	UFUNCTION(BlueprintCallable, Category = "Actions")
 	void AddAction(TSubclassOf<USAction> ActionClass);
@@ -44,7 +48,6 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
 	void SpawnProjectile(TSubclassOf<AActor> ClasstoSpawn);
 
 
