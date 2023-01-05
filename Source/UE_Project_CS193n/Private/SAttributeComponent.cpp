@@ -37,11 +37,11 @@ bool USAttributeComponent::IsActorAlive(AActor* FromActor)
 	return false;
 }
 
+
 bool USAttributeComponent::GetIsAlive()
 {
 	return Health > 0.0f;
 }
-
 
 
 bool USAttributeComponent::GetIsLowHealth()
@@ -50,12 +50,10 @@ bool USAttributeComponent::GetIsLowHealth()
 }
 
 
-
 float USAttributeComponent::GetHealth()
 {
 	return Health;
 }
-
 
 
 float USAttributeComponent::GetMaxHitPoint()
@@ -63,20 +61,24 @@ float USAttributeComponent::GetMaxHitPoint()
 	return HealthMax;
 }
 
+
 bool USAttributeComponent::GetIsFull()
 {
 	return Health >= HealthMax;
 }
+
 
 void USAttributeComponent::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
+
 bool USAttributeComponent::Kill(AActor* InstigatorActor)
 {
 	return ApplyHealthChange(InstigatorActor, -GetMaxHitPoint());
 }
+
 
 bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
 {

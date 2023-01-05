@@ -27,8 +27,6 @@ bool USAction::GetIsRunning()
 	return bIsRunning;
 }
 
-
-
 void USAction::StartAction_Implementation(AActor* InstigatorActor)
 {
 	UE_LOG(LogTemp, Log, TEXT("Runing: %s"), *GetNameSafe(this));

@@ -24,7 +24,7 @@ protected:
 
 
 	UPROPERTY(EditDefaultsOnly, Category = "Tags")
-	FGameplayTagContainer GrantsTags;
+	FGameplayTagContainer GrantsTags; 
 
 	UPROPERTY(EditDefaultsOnly, Category = "Tags")
 	FGameplayTagContainer BlockedTags;
@@ -32,7 +32,8 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	USActionComponent* GetOwingComponent() const;
 public:
-
+	UPROPERTY(EditDefaultsOnly, Category = "Action")
+    bool bAutoStart;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool GetIsRunning();

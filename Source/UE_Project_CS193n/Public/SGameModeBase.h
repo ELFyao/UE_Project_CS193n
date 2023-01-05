@@ -35,10 +35,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Item")
 	TSubclassOf<ASItemBase> CreditsCoinClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Item")
+	float SpawnItem_TimeInterval;
 
-
-
-
+	UPROPERTY(EditDefaultsOnly, Category = "Item")
+	int32 CreditsPerKill;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	UEnvQuery* SpawnBotQuery;
@@ -56,8 +57,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	float SpawnTimeInterval;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Item")
-	float SpawnItem_TimeInterval;
 
 	UFUNCTION()
 	void SpawnBotTimeElapsed();
@@ -70,6 +69,8 @@ protected:
 
 	UFUNCTION()
 	void OnItemQueryFinished(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
+
+
 
 	//void OnActorKilled(AActor* VictimActor, AActor* Killer);
 	UFUNCTION()

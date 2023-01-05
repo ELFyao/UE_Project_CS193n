@@ -111,10 +111,7 @@ void ASCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ASCharacter::onHealthChanged);
 
-	for (TSubclassOf<USAction> ActionClass : ActionClasses)
-	{
-		ActionComp->AddAction(ActionClass);
-	}
+
 }
 
 void ASCharacter::PrimaryAttack()

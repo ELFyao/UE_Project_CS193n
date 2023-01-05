@@ -13,6 +13,7 @@
 #include "Components/CapsuleComponent.h"
 #include "SCVarObject.h"
 #include "ASPlayerState.h"
+#include "../Public/SActionComponent.h"
 
 // Sets default values
 ASAICharacter::ASAICharacter()
@@ -21,6 +22,7 @@ ASAICharacter::ASAICharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	PawnSenseComp = CreateDefaultSubobject<UPawnSensingComponent>("PawnSenseComp");
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
+	ActionComp = CreateDefaultSubobject<USActionComponent>("ActionComp");
 
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
@@ -74,12 +76,12 @@ void ASAICharacter::onHealthChanged(AActor* InstigatorActor, USAttributeComponen
 		AAIController* AIC = Cast<AAIController>(GetController());
 
 		// playerState
-		AASPlayerState* playerState = AIC->GetPlayerState<AASPlayerState>();
+		//AASPlayerState* playerState = AIC->GetPlayerState<AASPlayerState>();
 
-		if (ensure(playerState))
-		{
-			playerState->AddCredits(BonusCreditsAmount);
-		}
+		//if (ensure(playerState))
+		//{
+		//	playerState->AddCredits(BonusCreditsAmount);
+		//}
 		
 		if (ensure(AIC)) {
 			AIC->GetBrainComponent()->StopLogic("Killed");

@@ -10,6 +10,7 @@
 #include "SItemBase.h"
 #include "../SCharacter.h"
 #include "SCVarObject.h"
+#include "../Public/ASPlayerState.h"
 
 static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.SpawnBots"), false, TEXT("Enable Spawning of bots via timer"), ECVF_Cheat);
 static TAutoConsoleVariable<bool> CVarSpawnItems(TEXT("su.SpawnItems"), false, TEXT("Enable Spawning Item"), ECVF_Cheat);
@@ -17,6 +18,8 @@ static TAutoConsoleVariable<bool> CVarSpawnItems(TEXT("su.SpawnItems"), false, T
 ASGameModeBase::ASGameModeBase()
 {
 	SpawnTimeInterval = 2.0f;
+
+	CreditsPerKill = 100;
 
 	SpawnItem_TimeInterval = 5.0f;
 }
@@ -212,6 +215,18 @@ void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 
 	}
 	UE_LOG(LogTemp, Log, TEXT("OnActorKilled: Victim: %s, Killer: %s"), *GetNameSafe(VictimActor), *GetNameSafe(Killer));
+
+	//½±Àø
+
+	APawn* Killerpawn = Cast<APawn>(Killer);
+	if (Killerpawn)
+	{
+		if (AASPlayerState* playerStates = Killerpawn->GetPlayerState<AASPlayerState>())
+		{
+			playerStates->AddCredits(CreditsPerKill);
+		}
+	}
+
 }
 
 void ASGameModeBase::RespawnPlayerElapsed(AController* controller)

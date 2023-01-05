@@ -8,6 +8,7 @@
 #include "GameplayTagContainer.h"
 #include "SActionComponent.generated.h"
 
+class USAction;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UE_PROJECT_CS193N_API USActionComponent : public UActorComponent
@@ -22,7 +23,10 @@ public:
 	FGameplayTagContainer AcitveGameplayTags;
 
 	UFUNCTION(BlueprintCallable, Category = "Actions")
-	void AddAction(TSubclassOf<USAction> ActionClass);
+	void AddAction(AActor* InstigatorActor,TSubclassOf<USAction> ActionClass);
+
+	UFUNCTION(BlueprintCallable, Category = "Actions")
+	void RemoveAction(USAction* ActionToRemove);
 
 	UFUNCTION(BlueprintCallable, Category = "Actions")
 	bool StartActionByName(AActor* InstigatorActor, FName ActionName);
@@ -33,6 +37,9 @@ public:
 
 
 protected:
+
+	UPROPERTY(EditAnywhere, Category = "Actions")
+	TArray<TSubclassOf<USAction>> ActionClasses;
 
 	UPROPERTY(EditAnywhere, Category = "Actions")
 	TArray<USAction*> Actions;

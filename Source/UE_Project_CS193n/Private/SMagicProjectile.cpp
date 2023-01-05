@@ -10,7 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "SActionComponent.h"
 #include "SGameplayFunctionLibrary.h"
-
+#include "SActionEffect.h"
 
 // Sets default values
 ASMagicProjectile::ASMagicProjectile()
@@ -70,6 +70,10 @@ void ASMagicProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Ot
 void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != GetInstigator()) {
+
+		//static FGameplayTag Tag = FGameplayTag::RequestGameplayTag("Status.Parrying");
+
+
 		USActionComponent* ActionComp = Cast<USActionComponent>(OtherActor->GetComponentByClass(USActionComponent::StaticClass()));
 		if (ActionComp && ActionComp->AcitveGameplayTags.HasTag(ParryTag)) {
 			MovementComp->Velocity = -MovementComp->Velocity;
@@ -85,8 +89,19 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 		//}
 		if (USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
 		{
-			UGameplayStatics::PlayWorldCameraShake(this, ImpactCameraShake, GetActorLocation(), 100, 500);
-			Destroy();
+
+			if (ActionComp)
+			{
+				ActionComp->AddAction(GetInstigator(), BurningActionClass);
+			}
+
+			if (ensure(!IsPendingKill()))
+			{
+				UGameplayStatics::PlayWorldCameraShake(this, ImpactCameraShake, GetActorLocation(), 100, 500);
+				Destroy();
+			}
+
+
 		}
 
 	}

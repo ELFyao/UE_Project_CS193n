@@ -15,6 +15,8 @@ class USoundBase;
 class UCameraShakeBase;
 /*class UCameraShake;*/
 
+class USActionEffect;
+
 UCLASS()
 class UE_PROJECT_CS193N_API ASMagicProjectile : public AActor
 {
@@ -65,6 +67,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
 	FGameplayTag ParryTag;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Attack")
+	TSubclassOf<USActionEffect> BurningActionClass;
 
 	UFUNCTION()
 	void OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

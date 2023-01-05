@@ -14,7 +14,7 @@ USActionComponent::USActionComponent()
 }
 
 
-void USActionComponent::AddAction(TSubclassOf<USAction> ActionClass)
+void USActionComponent::AddAction(AActor* InstigatorActor,TSubclassOf<USAction> ActionClass)
 {
 	if (!ensure(ActionClass))
 	{
@@ -24,8 +24,22 @@ void USActionComponent::AddAction(TSubclassOf<USAction> ActionClass)
 	if (ensure(NewAction))
 	{
 		Actions.Add(NewAction);
+		if (NewAction->bAutoStart &&ensure(NewAction->CanStart(InstigatorActor)))
+		{
+			NewAction->StartAction(InstigatorActor);
+		}
 	}
 }
+
+void USActionComponent::RemoveAction(USAction* ActionToRemove)
+{
+	if (ensure(ActionToRemove && !ActionToRemove->GetIsRunning()))
+	{
+		Actions.Remove(ActionToRemove);
+	}
+	
+}
+
 
 bool USActionComponent::StartActionByName(AActor* InstigatorActor, FName ActionName)
 {
@@ -62,6 +76,11 @@ bool USActionComponent::StopActionByName(AActor* InstigatorActor, FName ActionNa
 void USActionComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	for (TSubclassOf<USAction> ActionClass : ActionClasses)
+	{
+		AddAction(GetOwner(), ActionClass);
+	}
 
 	// ...
 	
