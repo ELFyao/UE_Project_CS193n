@@ -89,18 +89,15 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 		//}
 		if (USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
 		{
-
-			if (ActionComp)
-			{
-				ActionComp->AddAction(GetInstigator(), BurningActionClass);
-			}
-
 			if (ensure(!IsPendingKill()))
 			{
 				UGameplayStatics::PlayWorldCameraShake(this, ImpactCameraShake, GetActorLocation(), 100, 500);
 				Destroy();
 			}
-
+			if (ActionComp)
+			{
+				ActionComp->AddAction(GetInstigator(), BurningActionClass);
+			}
 
 		}
 

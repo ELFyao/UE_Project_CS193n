@@ -31,7 +31,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Item")
 	TSubclassOf<ASItemBase> HealthPotionClass;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Item")
 	TSubclassOf<ASItemBase> CreditsCoinClass;
 
