@@ -40,6 +40,7 @@ ASProjectileParent::ASProjectileParent()
 	AudioComp = CreateDefaultSubobject<UAudioComponent>("AudioComp");
 
 	AudioComp->SetupAttachment(RootComponent);
+	//@FIXME: don t forgot to replicate this.
 }
 
 // Called when the game starts or when spawned

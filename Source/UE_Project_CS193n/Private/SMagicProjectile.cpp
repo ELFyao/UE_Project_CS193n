@@ -48,6 +48,7 @@ ASMagicProjectile::ASMagicProjectile()
 	//SphereComp->SetCollisionResponseToAllChannels(ECR_Overlap);
 	//SphereComp->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
 	SphereComp->SetCollisionProfileName("Projectile");
+	bReplicates = true;
 }
 
 // Called when the game starts or when spawned
@@ -62,16 +63,12 @@ void ASMagicProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Ot
 	UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
 	AudioComp->Deactivate();
 	UGameplayStatics::PlaySoundAtLocation(this, ImpactAudio, GetActorLocation(), GetActorRotation(),1.0,1.0,0.0);
-	//UGameplayStatics::PlayWorldCameraShake(this, ImpactCameraShake, GetActorLocation(), 50, 150);
-	/*ImpactAudioComp->Activate();*/
 	Destroy();
 }
 
 void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != GetInstigator()) {
-
-		//static FGameplayTag Tag = FGameplayTag::RequestGameplayTag("Status.Parrying");
 
 
 		USActionComponent* ActionComp = Cast<USActionComponent>(OtherActor->GetComponentByClass(USActionComponent::StaticClass()));
@@ -80,21 +77,20 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 			SetInstigator(Cast<APawn>(OtherActor));
 			return;
 		}
-		//UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
-		//USAttributeComponent *AttributeComp = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));
-		//if (AttributeComp) {
-		//	AttributeComp->ApplyHealthChange(GetInstigator(),DamageAmount);
-		//	UGameplayStatics::PlayWorldCameraShake(this, ImpactCameraShake, GetActorLocation(), 100, 500);
-		//	Destroy();
-		//}
+
+
 		if (USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
 		{
 			if (ensure(!IsPendingKill()))
 			{
+				UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
 				UGameplayStatics::PlayWorldCameraShake(this, ImpactCameraShake, GetActorLocation(), 100, 500);
+				//@FIXME: require fix explode bug;
+				//not explode , need fix another sounds;
+
 				Destroy();
 			}
-			if (ActionComp)
+			if (ActionComp && HasAuthority())
 			{
 				ActionComp->AddAction(GetInstigator(), BurningActionClass);
 			}

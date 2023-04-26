@@ -11,8 +11,13 @@
 #include "../SCharacter.h"
 #include "SCVarObject.h"
 #include "../Public/ASPlayerState.h"
+#include "Kismet/GameplayStatics.h"
+#include "../Public/SSaveGame.h"
+#include "GameFramework/GameStateBase.h"
+#include "../Public/SGameplayInterface.h"
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 
-static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.SpawnBots"), false, TEXT("Enable Spawning of bots via timer"), ECVF_Cheat);
+static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.SpawnBots"), true, TEXT("Enable Spawning of bots via timer"), ECVF_Cheat);
 static TAutoConsoleVariable<bool> CVarSpawnItems(TEXT("su.SpawnItems"), false, TEXT("Enable Spawning Item"), ECVF_Cheat);
 
 ASGameModeBase::ASGameModeBase()
@@ -22,6 +27,8 @@ ASGameModeBase::ASGameModeBase()
 	CreditsPerKill = 100;
 
 	SpawnItem_TimeInterval = 5.0f;
+
+	SlotName = "SaveGame01";
 }
 
 void ASGameModeBase::KillAll()
@@ -38,12 +45,15 @@ void ASGameModeBase::KillAll()
 }
 
 
+
+
 void ASGameModeBase::StartPlay()
 {
 	Super::StartPlay();
 	GetWorldTimerManager().SetTimer(TimerHandle_SpawnBots, this, &ASGameModeBase::SpawnBotTimeElapsed, SpawnTimeInterval, true);
 
 	GetWorldTimerManager().SetTimer(TimerHandle_SpawnItem, this, &ASGameModeBase::SpawnItemTimeElapsed, SpawnItem_TimeInterval, false);
+	LoadWorldEnviron();
 }
 
 void ASGameModeBase::SpawnBotTimeElapsed()
@@ -65,7 +75,10 @@ void ASGameModeBase::SpawnBotTimeElapsed()
 	}
 	UE_LOG(LogTemp, Log, TEXT("Found %i Alive Robot"), NumofAliveBots);
 	
-	float MaxbotCount = 10.0f;
+	//@fixme remove hard coding
+
+
+	float MaxbotCount = 0.0f;    
 
 	if (diffcultCurve)
 	{
@@ -76,6 +89,7 @@ void ASGameModeBase::SpawnBotTimeElapsed()
 		UE_LOG(LogTemp, Log, TEXT("At Maximum bot Capacity, Skipping bot Spawn."));
 		return;
 	}
+
 	UEnvQueryInstanceBlueprintWrapper* QueryInstance = UEnvQueryManager::RunEQSQuery(this, SpawnBotQuery, this, EEnvQueryRunMode::RandomBest5Pct, nullptr);
 	if (ensure(QueryInstance))
 	{
@@ -99,6 +113,7 @@ void ASGameModeBase::SpawnItemTimeElapsed()
 	}
 	UE_LOG(LogTemp, Log, TEXT("Found %i items"), NumofItems);
 
+	//@fixme remove hard coding
 	float MaxItemCount = 6.0f;
 
 	if (NumofItems >= MaxItemCount) {
@@ -229,6 +244,24 @@ void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 
 }
 
+void ASGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
+{
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+
+	AASPlayerState* PS = NewPlayer->GetPlayerState<AASPlayerState>();
+	if (PS)
+	{
+		PS->LoadPlayerState(CurrentSaveGame);
+	}
+
+}
+
+void ASGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+{
+	Super::InitGame(MapName, Options, ErrorMessage);
+	LoadSaveGame();
+}
+
 void ASGameModeBase::RespawnPlayerElapsed(AController* controller)
 {
 	if (ensure(controller))
@@ -238,3 +271,114 @@ void ASGameModeBase::RespawnPlayerElapsed(AController* controller)
 	}
 }
 
+void ASGameModeBase::WriteSaveGame()
+{
+	for (int32 i = 0; i < GameState->PlayerArray.Num(); i++) {
+		AASPlayerState* PS = Cast<AASPlayerState>(GameState->PlayerArray[i]);
+		if (PS)
+		{
+			PS->SavePlayerState(CurrentSaveGame);
+			break;
+		}
+	}
+
+	CurrentSaveGame->SavedActors.Empty();
+
+	for (FActorIterator It(GetWorld()); It; ++It) {
+		AActor* Actor = *It;
+		if(!Actor->Implements<USGameplayInterface>()){
+			continue;
+		}
+		FActorSaveData ActorData;
+		ActorData.ActorName = Actor->GetName();
+		ActorData.transform = Actor->GetActorTransform();
+
+		FMemoryWriter MemWriter(ActorData.ByteData);
+
+		// pass the array to fill with data from Actor
+		FObjectAndNameAsStringProxyArchive Ar(MemWriter, true);
+
+		//find only variables with property(SaveGame)
+		Ar.ArIsSaveGame = true;
+		Actor->Serialize(Ar);
+
+
+
+
+		CurrentSaveGame->SavedActors.Add(ActorData);
+	 }
+
+
+
+	UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SlotName, 0);
+
+}
+
+
+
+void ASGameModeBase::LoadSaveGame()
+{
+	if (UGameplayStatics::DoesSaveGameExist(SlotName, 0))
+	{
+		CurrentSaveGame = Cast<USSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
+		if (CurrentSaveGame == nullptr) {
+			UE_LOG(LogTemp, Warning, TEXT("Failed to load SaveGame Data."));
+			return;
+		}
+		UE_LOG(LogTemp, Log, TEXT("Loaded SaveGame Data."));
+	}
+	else
+	{
+		CurrentSaveGame = Cast<USSaveGame>(UGameplayStatics::CreateSaveGameObject(USSaveGame::StaticClass()));
+		UE_LOG(LogTemp, Log, TEXT("Create New SaveGame Data."));
+	}
+}
+
+
+
+
+
+void ASGameModeBase::LoadWorldEnviron()
+{
+	if (CurrentSaveGame!= nullptr)
+	{
+		//CurrentSaveGame = Cast<USSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
+		//if (CurrentSaveGame == nullptr) {
+		//	UE_LOG(LogTemp, Warning, TEXT("Failed to load SaveGame Data."));
+		//	return;
+		//}
+		//UE_LOG(LogTemp, Log, TEXT("Loaded SaveGame Data."));
+		for (FActorIterator It(GetWorld()); It; ++It) {
+			AActor* Actor = *It;
+			if (!Actor->Implements<USGameplayInterface>()) {
+				continue;
+			}
+
+			for (FActorSaveData ActorData : CurrentSaveGame->SavedActors) {
+
+				if (ActorData.ActorName == Actor->GetName())
+				{
+					Actor->SetActorTransform(ActorData.transform);
+
+					FMemoryReader MemReader(ActorData.ByteData);
+					FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
+
+					//find only variables with property(SaveGame)
+					Ar.ArIsSaveGame = true;
+					Actor->Serialize(Ar);
+
+					ISGameplayInterface::Execute_OnActorLoaded(Actor);
+
+					break;
+				}
+			}
+		}
+
+
+
+	}
+	else
+	{
+		LoadSaveGame();
+	}
+}

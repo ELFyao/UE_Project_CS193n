@@ -10,6 +10,9 @@
 
 class USAction;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnActionStateChanged, USActionComponent*, OwingComp, USAction*, Action);
+
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UE_PROJECT_CS193N_API USActionComponent : public UActorComponent
 {
@@ -37,11 +40,20 @@ public:
 
 
 protected:
+	UFUNCTION(Server, Reliable)
+	void ServerStartAction(AActor* InstigatorActor, FName ActionName);
 
+
+	UFUNCTION(Server, Reliable)
+	void ServerStopAction(AActor* InstigatorActor, FName ActionName);
+
+
+	// grant actions at beginplay()
 	UPROPERTY(EditAnywhere, Category = "Actions")
 	TArray<TSubclassOf<USAction>> ActionClasses;
 
-	UPROPERTY(EditAnywhere, Category = "Actions")
+	// store all actions 
+	UPROPERTY(BlueprintReadOnly, Category = "Actions", Replicated)
 	TArray<USAction*> Actions;
 
 	// Called when the game starts
@@ -55,6 +67,16 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+
+
+	// two implementation of event;
+	UPROPERTY(BlueprintAssignable)
+	FOnActionStateChanged OnActionStarted;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnActionStateChanged OnActionStopped;
+
+	bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 	void SpawnProjectile(TSubclassOf<AActor> ClasstoSpawn);
 
 

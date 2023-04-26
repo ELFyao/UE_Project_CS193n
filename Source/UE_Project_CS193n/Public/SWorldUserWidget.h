@@ -19,6 +19,10 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	USizeBox* ParentSizeBox;
 public:
-	UPROPERTY(BlueprintReadOnly, Category = "UI")
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+		FVector World_offset;
+
+	UPROPERTY(BlueprintReadWrite, Category = "UI", meta=(ExposeOnSpawn=true))
 	AActor* AttachActor;
 };

@@ -10,7 +10,6 @@
 
 class UStaticMeshComponent;
 
-
 UCLASS()
 class UE_PROJECT_CS193N_API ASItemBase : public AActor, public ISGameplayInterface
 {
@@ -40,6 +39,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* BaseMesh;
+
 
 
 	void Interact_Implementation(APawn* InstigatorPawn);

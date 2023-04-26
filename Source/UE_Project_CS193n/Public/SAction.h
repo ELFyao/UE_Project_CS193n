@@ -10,6 +10,16 @@
 
 class USActionComponent;
 
+USTRUCT()
+struct FActionRepData
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY()
+	bool bIsRunning;
+	UPROPERTY()
+	AActor* InstigatorActor;
+};
 /**
  * 
  */
@@ -19,9 +29,18 @@ class UE_PROJECT_CS193N_API USAction : public UObject
 	GENERATED_BODY()
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+		UTexture2D* Icon; 
 
-	bool bIsRunning;
+	UPROPERTY(Replicated)
+	USActionComponent* ActionComp;
 
+	UPROPERTY(ReplicatedUsing = "OnRep_RepData")
+	FActionRepData RepData;
+		/*bool bIsRunning;*/
+
+	UFUNCTION()
+	void OnRep_RepData();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Tags")
 	FGameplayTagContainer GrantsTags; 
@@ -31,13 +50,19 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	USActionComponent* GetOwingComponent() const;
+
+	float TimeStarted;
+
 public:
+	void Initialize(USActionComponent* NewActionComp);
+
 	UPROPERTY(EditDefaultsOnly, Category = "Action")
     bool bAutoStart;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool GetIsRunning();
 
+	float GetTimeRemaining() const;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Action")
 	bool CanStart(AActor* InstigatorActor);
@@ -53,4 +78,8 @@ public:
 
 	UWorld* GetWorld() const override;
 
+
+	bool IsSupportedForNetworking() const override {
+		return true;
+	}
 };

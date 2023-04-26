@@ -7,13 +7,15 @@
 #include "Engine/EngineTypes.h"
 #include "GameFramework/Actor.h"
 
+
+
 // Sets default values
 ASItemBase::ASItemBase()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("BaseMesh");
-	
+
 	bIsCooldown = true;
 	CooldownSeconds = 5.0f;
 }
@@ -34,6 +36,7 @@ void ASItemBase::Interact_Implementation(APawn* InstigatorPawn)
 	if (bIsCooldown && PlayFunction(InstigatorPawn))
 	{
 		BaseMesh->SetVisibility(false);
+		SetActorEnableCollision(false);
 		bIsCooldown = false;
 		GetWorldTimerManager().SetTimer(CooldownTimer, this, &ASItemBase::CooldownOver, CooldownSeconds);
 	}

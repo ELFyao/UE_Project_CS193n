@@ -18,10 +18,10 @@ USAction_ProjectileAttack::USAction_ProjectileAttack()
 
 UWorld* USAction_ProjectileAttack::GetWorld() const
 {
-	UActorComponent* Comp = Cast<UActorComponent>(GetOuter());
-	if (Comp)
+	AActor* Actor = Cast<AActor>(GetOuter());
+	if (Actor)
 	{
-		return Comp->GetWorld();
+		return Actor->GetWorld();
 	}
 	return nullptr;
 }
@@ -36,11 +36,15 @@ void USAction_ProjectileAttack::StartAction_Implementation(AActor* InstigatorAct
 		InstigatorCharater->PlayAnimMontage(AttackAnim);
 		UGameplayStatics::SpawnEmitterAttached(HandFlashVFX, InstigatorCharater->GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
 		
-		FTimerHandle TimerHandle_AttackDelay;
-		FTimerDelegate Delegate;
-		Delegate.BindUFunction(this, "AttackDelayElapsed", InstigatorCharater);
+		// prevent weird sync;
+		if (InstigatorCharater->HasAuthority())
+		{
+			FTimerHandle TimerHandle_AttackDelay;
+			FTimerDelegate Delegate;
+			Delegate.BindUFunction(this, "AttackDelayElapsed", InstigatorCharater);
 
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, Delegate, AttackAnimDelay, false);
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, Delegate, AttackAnimDelay, false);
+		}
 	}
 }
 

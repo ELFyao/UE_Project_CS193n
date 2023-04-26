@@ -13,6 +13,7 @@ class UEnvQuery;
 class UCurveFloat;
 class UEnvQueryInstanceBlueprintWrapper;
 class ASItemBase;
+class USSaveGame;
 /**
  * 
  */
@@ -25,7 +26,17 @@ public:
 	ASGameModeBase();
 	virtual void StartPlay() override;
 	void OnActorKilled(AActor* VictimActor, AActor* Killer);
+
+	void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
+
+	void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 protected:
+
+	FString SlotName;
+
+	UPROPERTY()
+	USSaveGame* CurrentSaveGame;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Item")
 	UEnvQuery* ItemQuery;
 
@@ -77,4 +88,11 @@ protected:
 
 	UFUNCTION(Exec)
 	void KillAll();
+
+	UFUNCTION(BlueprintCallable, Category = "SaveGame")
+	void WriteSaveGame();
+
+	void LoadSaveGame();
+
+	void LoadWorldEnviron();
 };

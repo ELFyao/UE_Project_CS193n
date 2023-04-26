@@ -35,13 +35,18 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(ReplicatedUsing="OnRep_LidOpened", BlueprintReadOnly, SaveGame) //repNotify
 	bool bOpen;
 
+	UFUNCTION()
+	void OnRep_LidOpened();
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 public:
 	void Interact_Implementation(APawn* InstigatorPawn);
+
+	void OnActorLoaded_Implementation();
 
 };

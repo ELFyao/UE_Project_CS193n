@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "SItemBase.h"
 #include "SCreditsCoin.generated.h"
-
+//class USphereComponent;
 /**
  * 
  */
@@ -17,7 +17,8 @@ class UE_PROJECT_CS193N_API ASCreditsCoin : public ASItemBase
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "CreditsProperty")
 	float CreditsBonusAmount;
-
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	//USphereComponent*  SphereComp;
 public:
 	ASCreditsCoin();
 

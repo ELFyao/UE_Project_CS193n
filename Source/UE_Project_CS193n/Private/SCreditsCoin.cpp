@@ -3,10 +3,16 @@
 
 #include "SCreditsCoin.h"
 #include "ASPlayerState.h"
-
+#include "Components/SphereComponent.h"
 ASCreditsCoin::ASCreditsCoin()
 {
 	CreditsBonusAmount = 1000;
+	//SetReplicates(true);
+	//SphereComp = CreateDefaultSubobject<USphereComponent>("SphereComp");
+
+	//RootComponent = SphereComp;
+	//BaseMesh->SetupAttachment(RootComponent);
+	bReplicates = true;
 }
 
 bool ASCreditsCoin::PlayFunction(APawn* InstigatorPawn)

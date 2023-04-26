@@ -25,13 +25,21 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
 	float LowHealthThreshold;
 
-	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Replicated, Category = "Attributes")
 	float Health;
 	// Called when the game starts
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated,  Category = "Attributes")
 	float HealthMax;
 
 
+	//UPROPERTY(ReplicatedUsing = "OnRep_Dead")
+	//bool bIsAlive;
+
+	//UFUNCTION(Reliable)
+	//void OnRep_Dead();
+
+	UFUNCTION(NetMulticast, Reliable) //@fixme change to unreliable 
+	void MulticastHealthChanged(AActor* InstigatorActor, float NewHealth, float Delta);
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnHealthChanged OnHealthChanged;

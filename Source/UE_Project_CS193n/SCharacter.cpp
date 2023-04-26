@@ -147,11 +147,10 @@ void ASCharacter::onHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 		{
 			APlayerController* PC = Cast<APlayerController>(GetController());
 			DisableInput(PC);
+
+			SetLifeSpan(10.0f);
 		}
 	}
-// 	if (NewHealth <= 0 && Dealta < 0) {
-// 
-// 	}
 }
 
 

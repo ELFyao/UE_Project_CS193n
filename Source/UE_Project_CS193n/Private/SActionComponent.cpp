@@ -2,6 +2,9 @@
 
 
 #include "SActionComponent.h"
+#include "../UE_Project_CS193n.h"
+#include "Net/UnrealNetwork.h"
+#include "Engine/ActorChannel.h"
 
 // Sets default values for this component's properties
 USActionComponent::USActionComponent()
@@ -9,6 +12,7 @@ USActionComponent::USActionComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
+	SetIsReplicatedByDefault(true);
 
 	// ...
 }
@@ -20,9 +24,21 @@ void USActionComponent::AddAction(AActor* InstigatorActor,TSubclassOf<USAction> 
 	{
 		return;
 	}
-	USAction* NewAction = NewObject<USAction>(this, ActionClass);
+
+
+	if (!GetOwner()->HasAuthority())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Client attempting to AddAction.[Class: %s]"), *GetNameSafe(ActionClass));
+		return;
+	}
+
+
+
+	//@FIXME: BUG HAS FIXED IN UE5
+	USAction* NewAction = NewObject<USAction>(GetOwner(), ActionClass);
 	if (ensure(NewAction))
 	{
+		NewAction->Initialize(this);
 		Actions.Add(NewAction);
 		if (NewAction->bAutoStart &&ensure(NewAction->CanStart(InstigatorActor)))
 		{
@@ -49,6 +65,11 @@ bool USActionComponent::StartActionByName(AActor* InstigatorActor, FName ActionN
 			FString DebugMsg = ("Action Start Failed :" + ActionName.ToString());
 			GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Red, DebugMsg);
 
+
+			if (!GetOwner()->HasAuthority())
+			{
+				ServerStartAction(InstigatorActor, ActionName);
+			}
 			ActionClass->StartAction(InstigatorActor);
 			return true;
 		}
@@ -64,6 +85,10 @@ bool USActionComponent::StopActionByName(AActor* InstigatorActor, FName ActionNa
 		{
 			if (ActionClass->GetIsRunning())
 			{
+				if (!GetOwner()->HasAuthority())
+				{
+					ServerStopAction(InstigatorActor, ActionName);
+				}
 				ActionClass->StopAction(InstigatorActor);
 				return true;
 			}
@@ -72,15 +97,29 @@ bool USActionComponent::StopActionByName(AActor* InstigatorActor, FName ActionNa
 	return false;
 }
 
+void USActionComponent::ServerStartAction_Implementation(AActor* InstigatorActor, FName ActionName)
+{
+	StartActionByName(InstigatorActor, ActionName);
+}
+
+void USActionComponent::ServerStopAction_Implementation(AActor* InstigatorActor, FName ActionName)
+{
+	StopActionByName(InstigatorActor, ActionName);
+}
+
 // Called when the game starts
 void USActionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	for (TSubclassOf<USAction> ActionClass : ActionClasses)
+	if (GetOwner()->HasAuthority())
 	{
-		AddAction(GetOwner(), ActionClass);
+		for (TSubclassOf<USAction> ActionClass : ActionClasses)
+		{
+			AddAction(GetOwner(), ActionClass);
+		}
 	}
+
 
 	// ...
 	
@@ -91,10 +130,37 @@ void USActionComponent::BeginPlay()
 void USActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	FString DebugMsg = GetNameSafe(GetOwner()) + ":" + AcitveGameplayTags.ToStringSimple();
-	GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::White, DebugMsg);
+	//FString DebugMsg = GetNameSafe(GetOwner()) + ":" + AcitveGameplayTags.ToStringSimple();
+	//GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::White, DebugMsg);
+	for (USAction* Action : Actions)
+	{
+		FColor TextColor = Action->GetIsRunning() ? FColor::Blue : FColor::White;
+		FString ActionMsg = FString::Printf(TEXT("[%s] Action: %s"),
+			*GetNameSafe(GetOwner()),
+			*GetNameSafe(Action));
+		LogScreen(this, ActionMsg, TextColor, 0.0f);
+	}
 
 	// ...
 }
 
+bool USActionComponent::ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags)
+{
+	bool WroteSomthing = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+	for (USAction* Action : Actions)
+	{
+		if (Action) {
+			WroteSomthing |= Channel->ReplicateSubobject(Action, *Bunch, *RepFlags);
+		}
+	}
+	return WroteSomthing;
+}
+
+
+
+void USActionComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const {
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(USActionComponent, Actions);
+}
 
