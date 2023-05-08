@@ -5,3 +5,5 @@ this project is still developing(customizing)
 <br>
 fixing bug.
 add ablitities (go to editor thirdperson_bp->actionComp->Action array added)
+
+the  class structure was not updated.
